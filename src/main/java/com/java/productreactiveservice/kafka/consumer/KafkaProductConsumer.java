@@ -26,7 +26,7 @@ public class KafkaProductConsumer {
     @KafkaListener(topics = "amazon-products.1", groupId = "sai-group")
     public void consumePrice(Product product) {
         LOGGER.info("Product recived from kafka {} ", product);
-         sendToRedis(product).subscribe();
+        sendToRedis(product).subscribe();
 
     }
 

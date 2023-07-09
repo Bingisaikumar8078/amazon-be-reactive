@@ -11,17 +11,21 @@ import org.springframework.data.redis.connection.ReactiveSubscription;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.ReactiveRedisMessageListenerContainer;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/amazon/products")
 public class ProductController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductController.class);
+
+
     @Autowired
     ProductService productService;
     @Autowired
@@ -126,6 +130,25 @@ public class ProductController {
 
     public Flux<String> getProducts() {
         return productService.subscribeToChannel("pubsub-product-channel");
+    }
+
+//    @GetMapping("/sse/prices")
+//    public Flux<ServerSentEvent<Product>> streamPrices() {
+//        return Flux.interval(Duration.ofSeconds(1))
+//                .map(sequence -> ServerSentEvent.<Product>builder()
+//                .id(String.valueOf(sequence))
+//                        .event("price-event")
+//                        .data((getProducts())).build());
+//    }
+
+    @GetMapping("/sse")
+    public Flux<ServerSentEvent<String>> getRedisMessages() {
+        LOGGER.info("SSE Started");
+        AtomicInteger i = new AtomicInteger();
+        return reactiveTemplate.listenToChannel("pubsub-product-channel").map(message -> ServerSentEvent.builder(message.getMessage())
+                .id(String.valueOf(i.getAndIncrement())).event("prouct-event")
+
+                .build());
     }
 
 

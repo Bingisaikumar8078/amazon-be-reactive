@@ -66,7 +66,7 @@ public class ProductController {
     @PutMapping("/update/{id}")
     public void updateProductById(@RequestBody Product product, @PathVariable Integer id) {
 //Product product1 = productService.getProductByProductId(id);
-//        Product product1;
+//        Product finalProduct;
         LOGGER.info("poduct updated is {}", productRepository.findById(id));
         productRepository.findById(id).map((c) -> {
             c.setPrice(product.getPrice());
@@ -75,9 +75,12 @@ public class ProductController {
 
 
         }).flatMap(c -> {
-            LOGGER.info("Price for the product is", c.getPrice());
-            productRepository.save(c);
+            if (c != null) {
+                LOGGER.info("Price for the product is", c);
 
+                productRepository.save(c);
+
+            }
             return Mono.just(c);
         }).subscribe();
     }
@@ -145,10 +148,18 @@ public class ProductController {
     public Flux<ServerSentEvent<String>> getRedisMessages() {
         LOGGER.info("SSE Started");
         AtomicInteger i = new AtomicInteger();
-        return reactiveTemplate.listenToChannel("pubsub-product-channel").map(message -> ServerSentEvent.builder(message.getMessage())
-                .id(String.valueOf(i.getAndIncrement())).event("prouct-event")
+        return reactiveTemplate.listenToChannel("pubsub-product-channel").map(message -> ServerSentEvent.builder(message.getMessage()).id(String.valueOf(i.getAndIncrement())).event("product-event")
 
                 .build());
+    }
+
+    @PutMapping("/updatepricebyid/{id}")
+    public String updatepricebyid(@PathVariable Integer id, @RequestBody Product product) {
+        productRepository.findById(id).map(c -> {
+            c.setPrice(product.getPrice());
+            return (c);
+        }).flatMap(c -> productRepository.save(c));
+        return "product is updated";
     }
 
 

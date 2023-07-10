@@ -17,10 +17,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-/*    @Bean
-    public ReactiveRedisConnectionFactory connectionFactory() {
-        return new LettuceConnectionFactory("localhost", 6379);
-    }*/
 
     @Bean
     ChannelTopic topic() {
@@ -36,16 +32,5 @@ public class RedisConfig {
         return container;
     }
 
-    @Bean
-    ReactiveRedisOperations<String, Product> redisOperations(ReactiveRedisConnectionFactory factory) {
-        Jackson2JsonRedisSerializer<Product> serializer = new Jackson2JsonRedisSerializer<>(Product.class);
-
-        RedisSerializationContext.RedisSerializationContextBuilder<String, Product> builder =
-                RedisSerializationContext.newSerializationContext(new StringRedisSerializer());
-
-        RedisSerializationContext<String, Product> context = builder.value(serializer).build();
-
-        return new ReactiveRedisTemplate<>(factory, context);
-    }
 
 }

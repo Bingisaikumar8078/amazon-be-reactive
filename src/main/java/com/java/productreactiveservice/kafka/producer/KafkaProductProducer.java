@@ -32,8 +32,9 @@ public class KafkaProductProducer {
         LOGGER.info("Price is {}", product.getPrice());
 
 
-
         kafkaTemplate.send("amazon-products.1", product);
+        productRepository.save(product).subscribe();
+
 //        productService.sendToRedis(product);
     }
 
